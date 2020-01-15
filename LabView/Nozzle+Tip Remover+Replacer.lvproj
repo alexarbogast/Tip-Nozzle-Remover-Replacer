@@ -12,6 +12,7 @@
 		<Property Name="specify.custom.address" Type="Bool">false</Property>
 		<Item Name="Templates" Type="Folder">
 			<Item Name="DCMotor.vi" Type="VI" URL="../DCMotor.vi"/>
+			<Item Name="DCMotorAccel.vi" Type="VI" URL="../DCMotorAccel.vi"/>
 			<Item Name="LimitSwitch.vi" Type="VI" URL="../LimitSwitch.vi"/>
 		</Item>
 		<Item Name="Main.vi" Type="VI" URL="../Main.vi"/>
