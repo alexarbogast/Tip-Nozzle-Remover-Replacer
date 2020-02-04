@@ -13,7 +13,7 @@ Servo motor;
 
 void removeNozzle() 
 {
-    motor.writeMicroseconds(2000);
+    motor.writeMicroseconds(1600);
 
     while (digitalRead(LIMIT_SWITCH) != 0)
     {
