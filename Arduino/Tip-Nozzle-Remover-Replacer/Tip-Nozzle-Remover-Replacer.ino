@@ -1,32 +1,28 @@
 /*
  * TIP+NOZZLE REMOVER+REPLACER 
  * Alex Arbogast
- * January 21, 2019
+ * February 8, 2019
  */
-#include "Servo.h"
+#include "DCMotor.h"
+#include "Encoder.h"
 
 #define MOTOR_PIN 9
+#define DIR_PIN 8
 #define LIMIT_SWITCH 52
 
+#define ENCODER_A 2
+#define ENCODER_B 3
+
 char receivedChar;
-Servo motor;
 
-void removeNozzle() 
-{
-    motor.writeMicroseconds(1600);
+// Initialize motors and enocder
+DCmotor motor(MOTOR_PIN, DIR_PIN);
+Encoder encoder(ENCODER_A, ENCODER_B);
 
-    while (digitalRead(LIMIT_SWITCH) != 0)
-    {
-        // continue motor
-    }
-
-    motor.writeMicroseconds(1500);
-        
-}
-
-void removeTip(){}
-void replaceTip() { }
-void replaceNozzle() { }
+void removeNozzle();
+void removeTip();
+void replaceTip();
+void replaceNozzle();
 
 void setup() 
 {
@@ -36,7 +32,6 @@ void setup()
         // wait for serial coneection to establish
     }  
 
-    motor.attach(MOTOR_PIN);
     pinMode(LIMIT_SWITCH, INPUT_PULLUP);
 }
 
@@ -65,4 +60,42 @@ void loop()
                 break;
         }
     }
+}
+
+// --- FUNCTIONS ---
+void removeNozzle()
+{
+    motor.write(127, CW, 1);
+}
+
+void removeTip()
+{       
+    //motor.writeMicroseconds(1625);
+
+    // move motor until tip is dumped
+    while (digitalRead(LIMIT_SWITCH) != 0)
+    { 
+        // continue motor }
+    }
+
+    // move motor until dispense location is reached
+    //encoder.write(0);     // reset encoder
+    //motor.writeMicroseconds(1400); 
+    while (encoder.read() < 1100)
+    { 
+        // continue motor }
+    }
+
+    // stop for tip dispense
+    //motor.writeMicroseconds(1500);
+}
+
+void replaceTip() 
+{
+    motor.stop();
+}
+
+void replaceNozzle()
+{
+    motor.write(127, CCW, 1);
 }
