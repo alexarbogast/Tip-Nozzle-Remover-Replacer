@@ -8,10 +8,12 @@
 
 #define MOTOR_PIN 9
 #define DIR_PIN 8
-#define LIMIT_SWITCH 52
+#define LIMIT_SWITCH 53
 
 #define ENCODER_A 2
 #define ENCODER_B 3
+
+#define SOLENOID 40
 
 char receivedChar;
 
@@ -33,6 +35,9 @@ void setup()
     }  
 
     pinMode(LIMIT_SWITCH, INPUT_PULLUP);
+    
+    pinMode(SOLENOID, OUTPUT);
+    digitalWrite(SOLENOID, HIGH); // high retracts 
 }
 
 void loop() 
@@ -53,6 +58,9 @@ void loop()
                 replaceTip();
                 break;
             case 'd':
+                dispenseTip();
+                break;
+            case 'e':
                 replaceNozzle();
                 break;
             default:
@@ -65,12 +73,13 @@ void loop()
 // --- FUNCTIONS ---
 void removeNozzle()
 {
-    motor.write(127, CW, 1);
+    motor.write(200, CW, 1);
 }
 
 void removeTip()
 {       
-    //motor.writeMicroseconds(1625);
+    // CW for removing tip
+    motor.write(55, CW);
 
     // move motor until tip is dumped
     while (digitalRead(LIMIT_SWITCH) != 0)
@@ -79,15 +88,16 @@ void removeTip()
     }
 
     // move motor until dispense location is reached
-    //encoder.write(0);     // reset encoder
-    //motor.writeMicroseconds(1400); 
-    while (encoder.read() < 1100)
+    motor.stop();
+    encoder.write(0);     // reset encoder
+    motor.write(70, CCW); 
+    while (encoder.read() < 600)
     { 
         // continue motor }
     }
 
     // stop for tip dispense
-    //motor.writeMicroseconds(1500);
+    motor.stop();
 }
 
 void replaceTip() 
@@ -95,7 +105,23 @@ void replaceTip()
     motor.stop();
 }
 
+void dispenseTip()
+{
+    digitalWrite(SOLENOID, LOW);
+    delay(1000);
+
+    motor.write(50, CCW);
+
+    delay(500);
+    motor.stop();
+
+    digitalWrite(SOLENOID, HIGH);
+    
+}
+
 void replaceNozzle()
 {
-    motor.write(127, CCW, 1);
+    motor.stop();
+    motor.write(200, CCW);
+ 
 }

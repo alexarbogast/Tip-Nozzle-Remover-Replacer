@@ -15,8 +15,8 @@
 #endif
 
 // convenience macros
-#define CW 0 // Motor direction seen from top
-#define CCW 1
+#define CW 1 // Motor direction seen from top
+#define CCW 0
 
 class DCmotor
 {
