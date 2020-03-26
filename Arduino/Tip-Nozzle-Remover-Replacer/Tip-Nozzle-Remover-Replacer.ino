@@ -1,25 +1,26 @@
 /*
  * TIP+NOZZLE REMOVER+REPLACER 
  * Alex Arbogast
- * February 8, 2019
+ * March 14, 2019
  */
-#include "DCMotor.h"
-#include "Encoder.h"
+ 
+#include "DCmotor.h"
+#include "stepper.h"
 
-#define MOTOR_PIN 9
-#define DIR_PIN 8
-#define LIMIT_SWITCH 53
-
-#define ENCODER_A 2
-#define ENCODER_B 3
-
-#define SOLENOID 40
+#include "pins.h"
 
 char receivedChar;
 
-// Initialize motors and enocder
-DCmotor motor(MOTOR_PIN, DIR_PIN);
-Encoder encoder(ENCODER_A, ENCODER_B);
+// Initialize DC motors and enocder
+DCmotor motor1(MOTOR1_PWM, MOTOR1_DIR);
+
+Encoder encoder2(M2_ENC_A, M2_ENC_B);
+DCmotor motor2(MOTOR2_PWM, MOTOR2_DIR, &encoder2);
+
+DCmotor motor3(MOTOR3_PWM, MOTOR3_DIR);
+
+// Initialize Stepper
+stepper stpr(STPR_PWM, STPR_DIR, STPR_ENA);
 
 void removeNozzle();
 void removeTip();
@@ -34,10 +35,11 @@ void setup()
         // wait for serial coneection to establish
     }  
 
-    pinMode(LIMIT_SWITCH, INPUT_PULLUP);
-    
-    pinMode(SOLENOID, OUTPUT);
-    digitalWrite(SOLENOID, HIGH); // high retracts 
+    pinMode(LIMIT_SWITCH1, INPUT_PULLUP);
+    pinMode(LIMIT_SWITCH2, INPUT_PULLUP);
+
+    pinMode(IRBBS1, INPUT_PULLUP);
+    pinMode(IRBBS2, INPUT_PULLUP);
 }
 
 void loop() 
@@ -58,10 +60,10 @@ void loop()
                 replaceTip();
                 break;
             case 'd':
-                dispenseTip();
-                break;
-            case 'e':
                 replaceNozzle();
+                break;
+            case 'z':
+                test();
                 break;
             default:
                 // do nothing
@@ -73,55 +75,66 @@ void loop()
 // --- FUNCTIONS ---
 void removeNozzle()
 {
-    motor.write(200, CW, 1);
+    while(digitalRead(IRBBS1)!= 0)
+    {
+        // wait for torch to come into position
+    }
+
+    delay(1500);
+    motor1.write(170, CW);
+
+    while(digitalRead(IRBBS1) != 1)
+    {
+        // wait for nozzle to fall
+    }
+    motor1.stop();
+
+    // Delete THIS
+    removeTip();
 }
 
 void removeTip()
 {       
-    // CW for removing tip
-    motor.write(55, CW);
-
-    // move motor until tip is dumped
-    while (digitalRead(LIMIT_SWITCH) != 0)
-    { 
-        // continue motor }
+    while(digitalRead(IRBBS2) != 0)
+    {
+        // wait for torch to come into position
     }
 
-    // move motor until dispense location is reached
-    motor.stop();
-    encoder.write(0);     // reset encoder
-    motor.write(70, CCW); 
-    while (encoder.read() < 600)
-    { 
-        // continue motor }
-    }
-
-    // stop for tip dispense
-    motor.stop();
-}
-
-void replaceTip() 
-{
-    motor.stop();
-}
-
-void dispenseTip()
-{
-    digitalWrite(SOLENOID, LOW);
-    delay(1000);
-
-    motor.write(50, CCW);
-
-    delay(500);
-    motor.stop();
-
-    digitalWrite(SOLENOID, HIGH);
+    delay(1500);
     
+    // CW for removing tip
+    motor2.write(170, CW);
+    delay(7000);
+    motor2.stop();
+
+    stpr.enable();
+    while(digitalRead(LIMIT_SWITCH1) != 0)
+    {
+        stpr.step(1);
+    }
+
+    stpr.stepAngle(-380);
+    delay(2000);
+
+    while(digitalRead(LIMIT_SWITCH2) != 0)
+    {
+        stpr.step(-1);
+    }
+    stpr.disable();
 }
 
+void replaceTip()
+{
+    motor2.setHome();
+}
 void replaceNozzle()
 {
-    motor.stop();
-    motor.write(200, CCW);
- 
+    motor2.write(70, CW);
+    delay(2000);
+    motor2.stop();
+}
+
+void test()
+{
+    
 }

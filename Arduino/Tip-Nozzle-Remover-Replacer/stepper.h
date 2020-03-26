@@ -1,6 +1,12 @@
 #ifndef STEPPER_H
 #define STEPPER_H
 
+#if ARDUINO >= 100
+#include "Arduino.h"
+#else 
+#include "WProgram.h"
+#endif
+
 #define PULSE_WIDTH 500
 #define PERIOD 2
 #define PPR 200
@@ -9,50 +15,18 @@
 class stepper
 {
     private:
-    int m_motor_pin;
-    int m_dir_pin;
+    uint8_t m_motor_pin;
+    uint8_t m_dir_pin;
+    uint8_t m_ena_pin;
     
     public:
-        stepper(int motor_pin, int dir_pin)
-        {
-            this->m_motor_pin = motor_pin;
-            this->m_dir_pin = dir_pin;
-
-            pinMode(this->m_motor_pin, OUTPUT);
-            pinMode(this->m_dir_pin, OUTPUT);
-
-        }
+        stepper(uint8_t motor_pin, uint8_t dir_pin, uint8_t ena_pin);
         
-        void step(int steps) // if steps + CW, - CCW
-        {
-            if (steps > 0)
-            {
-                digitalWrite(this->m_dir_pin, HIGH);
-            }
-           else if (steps < 0)
-           {
-                digitalWrite(this->m_dir_pin, LOW);
-           }
+        void step(int steps);
+        void stepAngle(float deg);
+        void singleStep();
 
-            for (int i = 0; i < abs(steps); i++)
-            {
-                singleStep();
-            }
-        } 
-
-        void stepAngle(float deg)
-        {
-            float steps = deg*PPR/360;
-            step(steps);
-        }
-        
-        void singleStep()
-        {
-            digitalWrite(this->m_motor_pin, HIGH);
-            delayMicroseconds(PULSE_WIDTH); // pulse width
-            digitalWrite(this->m_motor_pin, LOW);
-
-            delay(PERIOD); // period in milliseconds
-        }
+        void enable();
+        void disable();
 };
 #endif //STEPPER_H
