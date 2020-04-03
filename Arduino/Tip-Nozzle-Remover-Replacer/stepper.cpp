@@ -38,9 +38,25 @@ void stepper::stepAngle(float deg)
 void stepper::singleStep()
 {
     digitalWrite(this->m_motor_pin, HIGH);
-    delayMicroseconds(PULSE_WIDTH); // pulse width
+    delayMicroseconds(this->m_period * 0.25); // pulse width
     digitalWrite(this->m_motor_pin, LOW);
-    delay(PERIOD); // period in milliseconds
+    delayMicroseconds(this->m_period * 0.75); // low period in milliseconds
+
+    updatePeriod();
+}
+
+void stepper::updatePeriod()
+{
+    // decrease period until constant velocity is hit
+    if (this->m_period > this->m_min_period)
+    {
+        this->m_period -= this->m_period_accel;
+    }
+}
+
+void stepper::reset()
+{
+    this->m_period = this->m_max_period;
 }
 
 void stepper::enable()

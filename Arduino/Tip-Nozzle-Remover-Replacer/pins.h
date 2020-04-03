@@ -30,5 +30,5 @@
 
 #define RELAY 31
 
-#define M2_ENC_A 18
+#define M2_ENC_A 18 //yellow
 #define M2_ENC_B 19

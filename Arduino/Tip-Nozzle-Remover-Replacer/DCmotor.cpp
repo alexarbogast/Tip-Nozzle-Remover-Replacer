@@ -38,15 +38,53 @@ void DCmotor::setHome()
 
 void DCmotor::home()
 {
-    // TODO: find fastest path to 0
-    long currenPosition = this->m_enc->read();
 
-    // while not at 0 or 180 deg continue...
-    write(30, CW);
-    while(this->m_enc->read()%3200 != 0)
-    {      
+    long currentPosition = this->m_enc->read();
+    Serial.println("Current Position:");
+    Serial.println(currentPosition);
+    
+    // normalize encoder position between 0 and 180 deg
+    if (currentPosition < 0)
+    {
+        currentPosition = (6534 + (currentPosition % 6534))%3267;
     }
+    else
+    {
+        currentPosition = currentPosition % 3267;
+    }
+    //this->m_enc->write(currentPosition);
+    Serial.println("Normalized:");
+    Serial.println(currentPosition);
+
+    // find fastest path to 0 or 180 deg
+    if (currentPosition == 0)
+    {
+        return;
+    }
+    else if (currentPosition <= 1634)
+    {  
+        while(this->m_enc->read()%3267 !=0)
+        {
+            write(35, CW);
+        }
+    }
+    else if (currentPosition > 1634)
+    {
+        while(this->m_enc->read()%3267 !=0)
+        {    
+            write(35, CCW);
+        }
+    }  
     stop();
+
+    // probably delete this
+    delay(20);
+    if(this->m_enc->read()%3267 != 0)
+    {
+        home();
+    }
+    
+    Serial.println(this->m_enc->read()%3267);
 }
 
 void DCmotor::stop()

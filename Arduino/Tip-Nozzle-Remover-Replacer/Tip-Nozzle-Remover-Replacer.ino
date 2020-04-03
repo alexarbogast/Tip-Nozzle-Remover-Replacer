@@ -3,7 +3,7 @@
  * Alex Arbogast
  * March 14, 2019
  */
- 
+#define ENCODER_OPTIMIZE_INTERRUPTS
 #include "DCmotor.h"
 #include "stepper.h"
 
@@ -81,7 +81,7 @@ void removeNozzle()
     }
 
     delay(1500);
-    motor1.write(170, CW);
+    motor1.write(230, CW);
 
     while(digitalRead(IRBBS1) != 1)
     {
@@ -108,33 +108,49 @@ void removeTip()
     motor2.stop();
 
     stpr.enable();
+    stpr.reset();
     while(digitalRead(LIMIT_SWITCH1) != 0)
     {
         stpr.step(1);
     }
 
-    stpr.stepAngle(-380);
-    delay(2000);
+    stpr.reset();
+    stpr.stepAngle(-100);   
+    motor2.home();
 
+    while(digitalRead(IRBBS2) != 0){  } // wait for tip dispense
+    delay(2000); 
+
+    stpr.reset();
     while(digitalRead(LIMIT_SWITCH2) != 0)
     {
         stpr.step(-1);
     }
     stpr.disable();
+
+    replaceTip();
 }
 
 void replaceTip()
 {
-    motor2.setHome();
+    delay(1000);
+    motor2.write(170, CCW);
+    delay(6000);
+    motor2.stop();
+    motor2.home();
 }
+
 void replaceNozzle()
 {
-    motor2.write(70, CW);
-    delay(2000);
-    motor2.stop();
+    motor2.setHome();
 }
 
 void test()
 {
-    
+    motor2.write(170, CW);
+    delay(7000);
+    motor2.stop();
+
+    delay(1000);
+    motor2.home();    
 }
